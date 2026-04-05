@@ -31,8 +31,10 @@ export default function Auth() {
           email,
           password,
           options: {
-            data: { name, role },
+            data: { name },
             emailRedirectTo: window.location.origin,
+          },
+        });
           },
         });
         if (error) throw error;
