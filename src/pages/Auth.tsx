@@ -35,8 +35,6 @@ export default function Auth() {
             emailRedirectTo: window.location.origin,
           },
         });
-          },
-        });
         if (error) throw error;
         toast.success("Account created! Check your email to verify.");
       }
@@ -75,24 +73,6 @@ export default function Auth() {
               <Label htmlFor="password">Password</Label>
               <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} />
             </div>
-            {!isLogin && (
-              <div className="space-y-2">
-                <Label>Role</Label>
-                <div className="flex gap-2">
-                  {(["patient", "pharmacist"] as const).map((r) => (
-                    <Button
-                      key={r}
-                      type="button"
-                      variant={role === r ? "default" : "outline"}
-                      className="flex-1 capitalize"
-                      onClick={() => setRole(r)}
-                    >
-                      {r}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-            )}
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Please wait..." : isLogin ? "Sign In" : "Sign Up"}
             </Button>
