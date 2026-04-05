@@ -15,7 +15,6 @@ export default function Auth() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
-  const [role, setRole] = useState<"patient" | "pharmacist">("patient");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,7 +31,7 @@ export default function Auth() {
           email,
           password,
           options: {
-            data: { name, role },
+            data: { name },
             emailRedirectTo: window.location.origin,
           },
         });
@@ -74,24 +73,6 @@ export default function Auth() {
               <Label htmlFor="password">Password</Label>
               <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} />
             </div>
-            {!isLogin && (
-              <div className="space-y-2">
-                <Label>Role</Label>
-                <div className="flex gap-2">
-                  {(["patient", "pharmacist"] as const).map((r) => (
-                    <Button
-                      key={r}
-                      type="button"
-                      variant={role === r ? "default" : "outline"}
-                      className="flex-1 capitalize"
-                      onClick={() => setRole(r)}
-                    >
-                      {r}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-            )}
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Please wait..." : isLogin ? "Sign In" : "Sign Up"}
             </Button>
