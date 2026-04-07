@@ -12,6 +12,7 @@ import Report from "./pages/Report";
 import Profile from "./pages/Profile";
 import Pharmacist from "./pages/Pharmacist";
 import Admin from "./pages/Admin";
+import NearbyPharmacies from "./pages/NearbyPharmacies";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
