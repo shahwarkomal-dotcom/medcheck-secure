@@ -42,33 +42,40 @@ export default function NearbyPharmacies() {
   const searchNearby = useCallback(
     (location: { lat: number; lng: number }, mapInstance: google.maps.Map) => {
       if (!mapInstance) return;
-      const service = new google.maps.places.PlacesService(mapInstance);
-      serviceRef.current = service;
-      setLoading(true);
+      try {
+        const service = new google.maps.places.PlacesService(mapInstance);
+        serviceRef.current = service;
+        setLoading(true);
 
-      service.nearbySearch(
-        {
-          location,
-          radius: 3000,
-          type: "pharmacy",
-        },
-        (results, status) => {
-          setLoading(false);
-          if (status === google.maps.places.PlacesServiceStatus.OK && results) {
-            setPharmacies(
-              results.map((p) => ({
-                id: p.place_id || crypto.randomUUID(),
-                name: p.name || "Unknown Pharmacy",
-                address: p.vicinity || "Address not available",
-                lat: p.geometry?.location?.lat() || 0,
-                lng: p.geometry?.location?.lng() || 0,
-              }))
-            );
+        service.nearbySearch(
+          {
+            location,
+            radius: 3000,
+            type: "pharmacy",
+          },
+          (results, status) => {
+            setLoading(false);
+            if (status === google.maps.places.PlacesServiceStatus.OK && results) {
+              setPharmacies(
+                results.map((p) => ({
+                  id: p.place_id || crypto.randomUUID(),
+                  name: p.name || "Unknown Pharmacy",
+                  address: p.vicinity || "Address not available",
+                  lat: p.geometry?.location?.lat() || 0,
+                  lng: p.geometry?.location?.lng() || 0,
+                }))
+              );
+            } else {
+              toast({ title: "Could not load pharmacies", description: "Please check your API key referrer settings.", variant: "destructive" });
+            }
           }
-        }
-      );
+        );
+      } catch {
+        setLoading(false);
+        toast({ title: "Map error", description: "Could not search nearby pharmacies.", variant: "destructive" });
+      }
     },
-    []
+    [toast]
   );
 
   useEffect(() => {
@@ -105,27 +112,35 @@ export default function NearbyPharmacies() {
   const handleSearch = () => {
     if (!searchQuery.trim() || !serviceRef.current || !map) return;
     setLoading(true);
-    serviceRef.current.textSearch(
-      { query: `${searchQuery} pharmacy`, location: userLocation || defaultCenter, radius: 5000 },
-      (results, status) => {
-        setLoading(false);
-        if (status === google.maps.places.PlacesServiceStatus.OK && results) {
-          const mapped = results.map((p) => ({
-            id: p.place_id || crypto.randomUUID(),
-            name: p.name || "Unknown Pharmacy",
-            address: p.formatted_address || "Address not available",
-            lat: p.geometry?.location?.lat() || 0,
-            lng: p.geometry?.location?.lng() || 0,
-          }));
-          setPharmacies(mapped);
-          if (mapped.length > 0) {
-            map.panTo({ lat: mapped[0].lat, lng: mapped[0].lng });
+    const timeout = setTimeout(() => setLoading(false), 8000);
+    try {
+      serviceRef.current.textSearch(
+        { query: `${searchQuery} pharmacy`, location: userLocation || defaultCenter, radius: 5000 },
+        (results, status) => {
+          clearTimeout(timeout);
+          setLoading(false);
+          if (status === google.maps.places.PlacesServiceStatus.OK && results) {
+            const mapped = results.map((p) => ({
+              id: p.place_id || crypto.randomUUID(),
+              name: p.name || "Unknown Pharmacy",
+              address: p.formatted_address || "Address not available",
+              lat: p.geometry?.location?.lat() || 0,
+              lng: p.geometry?.location?.lng() || 0,
+            }));
+            setPharmacies(mapped);
+            if (mapped.length > 0) {
+              map.panTo({ lat: mapped[0].lat, lng: mapped[0].lng });
+            }
+          } else {
+            toast({ title: "No results", description: "Try a different search term." });
           }
-        } else {
-          toast({ title: "No results", description: "Try a different search term." });
         }
-      }
-    );
+      );
+    } catch {
+      clearTimeout(timeout);
+      setLoading(false);
+      toast({ title: "Search failed", description: "Please try again.", variant: "destructive" });
+    }
   };
 
   const openDirections = (pharmacy: Pharmacy) => {
